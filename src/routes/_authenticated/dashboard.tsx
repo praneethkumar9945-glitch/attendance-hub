@@ -1,11 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { QrCode, Users, ScanLine, ClipboardList, LogOut } from "lucide-react";
 import EmployeeManager from "@/components/hr/EmployeeManager";
-import AttendanceScanner from "@/components/hr/AttendanceScanner";
 import AttendanceList from "@/components/hr/AttendanceList";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -48,21 +47,24 @@ function Dashboard() {
               <p className="truncate text-xs text-muted-foreground">{email}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Sign out</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/scanner"><ScanLine className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Scanner station</span></Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
         <Tabs defaultValue="employees" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="employees" className="gap-1.5 text-xs sm:text-sm"><Users className="h-4 w-4" /><span className="hidden xs:inline sm:inline">Employees</span></TabsTrigger>
-            <TabsTrigger value="scanner" className="gap-1.5 text-xs sm:text-sm"><ScanLine className="h-4 w-4" /><span>Scanner</span></TabsTrigger>
             <TabsTrigger value="attendance" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-4 w-4" /><span>Records</span></TabsTrigger>
           </TabsList>
           <TabsContent value="employees" className="mt-4"><EmployeeManager /></TabsContent>
-          <TabsContent value="scanner" className="mt-4"><AttendanceScanner /></TabsContent>
           <TabsContent value="attendance" className="mt-4"><AttendanceList /></TabsContent>
         </Tabs>
       </main>

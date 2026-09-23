@@ -1,11 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { QrCode, Users, ScanLine, ClipboardList, LogOut } from "lucide-react";
 import EmployeeManager from "@/components/hr/EmployeeManager";
-import AttendanceScanner from "@/components/hr/AttendanceScanner";
 import AttendanceList from "@/components/hr/AttendanceList";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({

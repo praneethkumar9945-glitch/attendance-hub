@@ -17,6 +17,27 @@ export interface RoleState {
   reload: () => void;
 }
 
+/**
+ * On first successful sign-in, turn the role chosen at sign-up (stored in the
+ * account metadata) into a real role row via the claim_role database function.
+ */
+export async function ensureRoleClaimed(): Promise<void> {
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) return;
+  const { data: existing } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  if (existing && existing.length > 0) return;
+  const meta = user.user_metadata ?? {};
+  const desired = (meta['desired_role'] as AppRole | undefined) ?? "hr";
+  const fullName = (meta['full_name'] as string | undefined) ?? user.email ?? "";
+  const department = (meta['department'] as string | undefined) ?? null;
+  await supabase.rpc("claim_role", {
+    _role: desired,
+    _full_name: fullName,
+    _department: department,
+  });
+}
+
 export function useRoles(): RoleState {
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
@@ -32,6 +53,8 @@ export function useRoles(): RoleState {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
       if (!user) { if (!cancelled) setLoading(false); return; }
+      await ensureRoleClaimed();
+      if (cancelled) return;
       const [{ data: roleRows }, { data: profile }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", user.id),
         supabase.from("profiles").select("full_name, department").eq("id", user.id).maybeSingle(),

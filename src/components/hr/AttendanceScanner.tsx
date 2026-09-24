@@ -3,10 +3,8 @@ import { Html5Qrcode } from "html5-qrcode";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Camera, StopCircle, LogIn, LogOut, UserRound, CheckCircle2 } from "lucide-react";
+import { Camera, StopCircle, UserRound, CheckCircle2 } from "lucide-react";
 import { captureVideoFrame } from "@/lib/image";
 import type { PersonKind } from "./PersonManager";
 
@@ -21,30 +19,11 @@ export default function AttendanceScanner() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerId = "qr-scanner-region";
   const [scanning, setScanning] = useState(false);
-  const [people, setPeople] = useState<P[]>([]);
-  const [selectedId, setSelectedId] = useState("");
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<{ person: P; type: "in" | "out"; snapshot: string | null; at: string } | null>(null);
   const cooldownRef = useRef<string | null>(null);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   useEffect(() => () => { stop(); }, []);
-
-  async function load() {
-    const lists = await Promise.all((["employee", "student"] as PersonKind[]).map(async (kind) => {
-      const cfg = CFG[kind];
-      const { data } = await supabase.from(cfg.table).select(`id, full_name, photo_url, ${cfg.codeField}`).order("full_name");
-      return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
-        id: r['id'] as string,
-        full_name: r['full_name'] as string,
-        code: (r[cfg.codeField] as string) ?? "",
-        photo_url: (r['photo_url'] as string) ?? null,
-        kind,
-      }));
-    }));
-    setSelectedId("");
-    setPeople(lists.flat());
-  }
 
   function videoEl() {
     return document.querySelector(`#${containerId} video`) as HTMLVideoElement | null;

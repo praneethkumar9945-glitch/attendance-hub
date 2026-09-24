@@ -3,10 +3,8 @@ import { Html5Qrcode } from "html5-qrcode";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Camera, StopCircle, LogIn, LogOut, UserRound, CheckCircle2 } from "lucide-react";
+import { Camera, StopCircle, UserRound, CheckCircle2 } from "lucide-react";
 import { captureVideoFrame } from "@/lib/image";
 import type { PersonKind } from "./PersonManager";
 
@@ -21,30 +19,11 @@ export default function AttendanceScanner() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerId = "qr-scanner-region";
   const [scanning, setScanning] = useState(false);
-  const [people, setPeople] = useState<P[]>([]);
-  const [selectedId, setSelectedId] = useState("");
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<{ person: P; type: "in" | "out"; snapshot: string | null; at: string } | null>(null);
   const cooldownRef = useRef<string | null>(null);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   useEffect(() => () => { stop(); }, []);
-
-  async function load() {
-    const lists = await Promise.all((["employee", "student"] as PersonKind[]).map(async (kind) => {
-      const cfg = CFG[kind];
-      const { data } = await supabase.from(cfg.table).select(`id, full_name, photo_url, ${cfg.codeField}`).order("full_name");
-      return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
-        id: r['id'] as string,
-        full_name: r['full_name'] as string,
-        code: (r[cfg.codeField] as string) ?? "",
-        photo_url: (r['photo_url'] as string) ?? null,
-        kind,
-      }));
-    }));
-    setSelectedId("");
-    setPeople(lists.flat());
-  }
 
   function videoEl() {
     return document.querySelector(`#${containerId} video`) as HTMLVideoElement | null;
@@ -167,25 +146,6 @@ export default function AttendanceScanner() {
             )}
           </div>
           <p className="mt-2 text-center text-xs text-muted-foreground">Staff and students are recognised automatically from the QR code — a live photo is captured with each punch.</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="space-y-3 p-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs uppercase text-muted-foreground">Manual punch</Label>
-            <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger><SelectValue placeholder="Select a person" /></SelectTrigger>
-              <SelectContent>
-                {people.map((p) => <SelectItem key={`${p.kind}-${p.id}`} value={p.id}>{p.full_name} ({p.code}) · {p.kind === "student" ? "Student" : "Staff"}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={() => manualPunch("in")} disabled={processing} className="bg-emerald-600 hover:bg-emerald-700"><LogIn className="mr-2 h-4 w-4" />Punch In</Button>
-            <Button onClick={() => manualPunch("out")} disabled={processing} variant="destructive"><LogOut className="mr-2 h-4 w-4" />Punch Out</Button>
-          </div>
-          <p className="text-center text-xs text-muted-foreground">Both Punch In and Punch Out can be recorded for the same person on the same day.</p>
         </CardContent>
       </Card>
 

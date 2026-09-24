@@ -170,25 +170,6 @@ export default function AttendanceScanner() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="space-y-3 p-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs uppercase text-muted-foreground">Manual punch</Label>
-            <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger><SelectValue placeholder="Select a person" /></SelectTrigger>
-              <SelectContent>
-                {people.map((p) => <SelectItem key={`${p.kind}-${p.id}`} value={p.id}>{p.full_name} ({p.code}) · {p.kind === "student" ? "Student" : "Staff"}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={() => manualPunch("in")} disabled={processing} className="bg-emerald-600 hover:bg-emerald-700"><LogIn className="mr-2 h-4 w-4" />Punch In</Button>
-            <Button onClick={() => manualPunch("out")} disabled={processing} variant="destructive"><LogOut className="mr-2 h-4 w-4" />Punch Out</Button>
-          </div>
-          <p className="text-center text-xs text-muted-foreground">Both Punch In and Punch Out can be recorded for the same person on the same day.</p>
-        </CardContent>
-      </Card>
-
       {result && (
         <Card className="border-emerald-500/50">
           <CardContent className="space-y-3 p-4">
